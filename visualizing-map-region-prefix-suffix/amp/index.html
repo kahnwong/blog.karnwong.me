@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html ⚡>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+
+    <title>Visualizing map region prefix/suffix</title>
+
+    <link rel="canonical" href="https://blog.karnwong.me/visualizing-map-region-prefix-suffix/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    
+    <meta property="og:site_name" content="Karn Wong&#x27;s Blog" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Visualizing map region prefix/suffix" />
+    <meta property="og:description" content="import pandas as pd import numpy as np import geopandas as gpd import geoplot as gplt import matplotlib.pyplot as plt from geoplot import polyplot from pythainlp.tokenize import word_tokenize, syllable_tokenize Data structure name: target region name geometry: spatial column *: parent region name, e.g. in &amp;quot;district&amp;" />
+    <meta property="og:url" content="https://blog.karnwong.me/visualizing-map-region-prefix-suffix/" />
+    <meta property="og:image" content="https://static.ghost.org/v3.0.0/images/publication-cover.png" />
+    <meta property="article:published_time" content="2020-09-03T12:04:42.000Z" />
+    <meta property="article:modified_time" content="2021-01-31T07:08:21.000Z" />
+    <meta property="article:tag" content="data analysis" />
+    <meta property="article:tag" content="gis" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Visualizing map region prefix/suffix" />
+    <meta name="twitter:description" content="import pandas as pd import numpy as np import geopandas as gpd import geoplot as gplt import matplotlib.pyplot as plt from geoplot import polyplot from pythainlp.tokenize import word_tokenize, syllable_tokenize Data structure name: target region name geometry: spatial column *: parent region name, e.g. in &amp;quot;district&amp;" />
+    <meta name="twitter:url" content="https://blog.karnwong.me/visualizing-map-region-prefix-suffix/" />
+    <meta name="twitter:image" content="https://static.ghost.org/v3.0.0/images/publication-cover.png" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Karn Wong" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="data analysis, gis" />
+    <meta property="og:image:width" content="2709" />
+    <meta property="og:image:height" content="938" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Karn Wong&#x27;s Blog",
+        "url": "https://blog.karnwong.me/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.karnwong.me/favicon.ico"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Karn Wong",
+        "url": "https://blog.karnwong.me/author/karn/",
+        "sameAs": []
+    },
+    "headline": "Visualizing map region prefix/suffix",
+    "url": "https://blog.karnwong.me/visualizing-map-region-prefix-suffix/",
+    "datePublished": "2020-09-03T12:04:42.000Z",
+    "dateModified": "2021-01-31T07:08:21.000Z",
+    "keywords": "data analysis, gis",
+    "description": "import pandas as pd\nimport numpy as np\nimport geopandas as gpd\nimport geoplot as gplt\nimport matplotlib.pyplot as plt\nfrom geoplot import polyplot\nfrom pythainlp.tokenize import word_tokenize, syllable_tokenize\n\n\nData structure\n * name: target region name\n * geometry: spatial column\n * *: parent region name, e.g. in &quot;district&quot; dataset it would have a &quot;province&quot;\n   column\n\nDissolving dataset in case you have multiple region level in the same file\n# assuming you have a district dataset and want to",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.karnwong.me/"
+    }
+}
+    </script>
+
+    <meta name="generator" content="Ghost 4.11" />
+    <link rel="alternate" type="application/rss+xml" title="Karn Wong&#x27;s Blog" href="https://blog.karnwong.me/rss/" />
+
+    <style amp-custom>
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        font-size: 62.5%;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        color: #3a4145;
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
+        font-size: 1.7rem;
+        line-height: 1.55em;
+        font-weight: 400;
+        font-style: normal;
+        background: #fff;
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    p,
+    ul,
+    ol,
+    li,
+    dl,
+    dd,
+    hr,
+    pre,
+    form,
+    table,
+    video,
+    figure,
+    figcaption,
+    blockquote {
+        margin: 0;
+        padding: 0;
+    }
+
+    ul[class],
+    ol[class] {
+        padding: 0;
+        list-style: none;
+    }
+
+    img {
+        display: block;
+        max-width: 100%;
+    }
+
+    input,
+    button,
+    select,
+    textarea {
+        font: inherit;
+        -webkit-appearance: none;
+    }
+
+    fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    label {
+        display: block;
+        font-size: 0.9em;
+        font-weight: 700;
+    }
+
+    hr {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 1px;
+        border: 0;
+        border-top: 1px solid currentcolor;
+        opacity: 0.1;
+    }
+
+    ::selection {
+        text-shadow: none;
+        background: #cbeafb;
+    }
+
+    mark {
+        background-color: #fdffb6;
+    }
+
+    small {
+        font-size: 80%;
+    }
+
+    sub,
+    sup {
+        position: relative;
+        font-size: 75%;
+        line-height: 0;
+        vertical-align: baseline;
+    }
+    sup {
+        top: -0.5em;
+    }
+    sub {
+        bottom: -0.25em;
+    }
+
+    ul li + li {
+        margin-top: 0.6em;
+    }
+
+    a {
+        color: var(--ghost-accent-color, #1292EE);
+        text-decoration-skip-ink: auto;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin: 0;
+        font-weight: 700;
+        color: #121212;
+        line-height: 1.4em;
+    }
+
+    h1 {
+        font-size: 3.4rem;
+        line-height: 1.1em;
+    }
+
+    h2 {
+        font-size: 2.4rem;
+        line-height: 1.2em;
+    }
+
+    h3 {
+        font-size: 1.8rem;
+    }
+
+    h4 {
+        font-size: 1.7rem;
+    }
+
+    h5 {
+        font-size: 1.6rem;
+    }
+
+    h6 {
+        font-size: 1.6rem;
+    }
+
+    amp-img {
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    amp-img img {
+        object-fit: cover;
+    }
+
+    .page-header {
+        padding: 50px 5vmin 30px;
+        text-align: center;
+        font-size: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .page-header a {
+        color: #121212;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 1.6rem;
+        letter-spacing: -0.1px;
+    }
+
+    .post {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    .post-header {
+        margin: 0 5vmin 5vmin;
+        text-align: center;
+    }
+
+    .post-meta {
+        margin: 1rem 0 0 0;
+        text-transform: uppercase;
+        color: #738a94;
+        font-weight: 500;
+        font-size: 1.3rem;
+    }
+
+    .post-image {
+        margin: 0 0 5vmin;
+    }
+
+    .post-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .post-content {
+        padding: 0 5vmin;
+    }
+
+    .post-content > * + * {
+        margin-top: 1.5em;
+    }
+
+    .post-content [id]:not(:first-child) {
+        margin: 2em 0 0;
+    }
+
+    .post-content > [id] + * {
+        margin-top: 1rem;
+    }
+
+    .post-content [id] + .kg-card,
+    .post-content blockquote + .kg-card {
+        margin-top: 40px;
+    }
+
+    .post-content > ul,
+    .post-content > ol,
+    .post-content > dl {
+        padding-left: 1.9em;
+    }
+
+    .post-content hr {
+        margin-top: 40px;
+    }
+
+    .post .post-content hr + * {
+        margin-top: 40px;
+    }
+
+    .post-content amp-img {
+        background-color: #f8f8f8;
+    }
+
+    .post-content blockquote {
+        position: relative;
+        font-style: italic;
+    }
+
+    .post-content blockquote::before {
+        content: "";
+        position: absolute;
+        left: -1.5em;
+        top: 0;
+        bottom: 0;
+        width: 0.3rem;
+        background: var(--ghost-accent-color, #1292EE);
+    }
+
+    .post-content :not(.kg-card):not([id]) + .kg-card {
+        margin-top: 40px;
+    }
+
+    .post-content .kg-card + :not(.kg-card) {
+        margin-top: 40px;
+    }
+
+    .kg-card figcaption {
+        padding: 1.5rem 1.5rem 0;
+        text-align: center;
+        font-weight: 500;
+        font-size: 1.3rem;
+        line-height: 1.4em;
+        opacity: 0.6;
+    }
+
+    .kg-card figcaption strong {
+        color: rgba(0,0,0,0.8);
+    }
+
+    .post-content :not(pre) code {
+        vertical-align: middle;
+        padding: 0.15em 0.4em 0.15em;
+        border: #e1eaef 1px solid;
+        font-weight: 400;
+        font-size: 0.9em;
+        line-height: 1em;
+        color: #15171a;
+        background: #f0f6f9;
+        border-radius: 0.25em;
+    }
+
+    .post-content > pre {
+        overflow: scroll;
+        padding: 16px 20px;
+        color: #fff;
+        background: #1F2428;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px -2px rgba(0,0,0,.1), 0 0 1px rgba(0,0,0,.4);
+    }
+
+    .kg-embed-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .kg-image-card img {
+        margin: auto;
+    }
+
+    .kg-gallery-card + .kg-gallery-card {
+        margin-top: 0.75em;
+    }
+
+    .kg-gallery-container {
+        position: relative;
+    }
+
+    .kg-gallery-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .kg-gallery-image {
+        width: 100%;
+        height: 100%;
+    }
+
+    .kg-gallery-row:not(:first-of-type) {
+        margin: 0.75em 0 0 0;
+    }
+
+    .kg-gallery-image:not(:first-of-type) {
+        margin: 0 0 0 0.75em;
+    }
+
+    .kg-bookmark-card,
+    .kg-bookmark-publisher {
+        position: relative;
+    }
+
+    .kg-bookmark-container,
+    .kg-bookmark-container:hover {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row-reverse;
+        color: currentColor;
+        background: rgba(255,255,255,0.6);
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
+        text-decoration: none;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+    }
+
+    .kg-bookmark-content {
+        flex-basis: 0;
+        flex-grow: 999;
+        padding: 20px;
+        order: 1;
+    }
+
+    .kg-bookmark-title {
+        font-weight: 600;
+        font-size: 1.5rem;
+        line-height: 1.3em;
+    }
+
+    .kg-bookmark-description {
+        display: -webkit-box;
+        max-height: 45px;
+        margin: 0.5em 0 0 0;
+        font-size: 1.4rem;
+        line-height: 1.55em;
+        overflow: hidden;
+        opacity: 0.8;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .kg-bookmark-metadata {
+        margin-top: 20px;
+    }
+
+    .kg-bookmark-metadata {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        font-size: 1.3rem;
+        line-height: 1.3em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .kg-bookmark-description {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+    }
+
+    .kg-bookmark-metadata amp-img {
+        width: 18px;
+        height: 18px;
+        max-width: 18px;
+        max-height: 18px;
+        margin-right: 10px;
+    }
+
+    .kg-bookmark-thumbnail {
+        display: flex;
+        flex-basis: 20rem;
+        flex-grow: 1;
+        justify-content: flex-end;
+    }
+
+    .kg-bookmark-thumbnail amp-img {
+        max-height: 200px;
+    }
+
+    .kg-bookmark-author {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .kg-bookmark-publisher::before {
+        content: "•";
+        margin: 0 .5em;
+    }
+
+    .kg-width-full.kg-card-hascaption {
+        display: grid;
+        grid-template-columns: inherit;
+    }
+
+    .post-content table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .post-content th {
+        padding: 0.5em 0.8em;
+        text-align: left;
+        font-size: .75em;
+        text-transform: uppercase;
+    }
+
+    .post-content td {
+        padding: 0.4em 0.7em;
+    }
+
+    .post-content tbody tr:nth-child(2n + 1) {
+        background-color: rgba(0,0,0,0.1);
+        padding: 1px;
+    }
+
+    .post-content tbody tr:nth-child(2n + 2) td:last-child {
+        box-shadow:
+            inset 1px 0 rgba(0,0,0,0.1),
+            inset -1px 0 rgba(0,0,0,0.1);
+    }
+
+    .post-content tbody tr:nth-child(2n + 2) td {
+        box-shadow: inset 1px 0 rgba(0,0,0,0.1);
+    }
+
+    .post-content tbody tr:last-child {
+        border-bottom: 1px solid rgba(0,0,0,.1);
+    }
+
+    .page-footer {
+        padding: 60px 5vmin;
+        margin: 60px auto 0;
+        text-align: center;
+        background-color: #f8f8f8;
+    }
+
+    .page-footer h3 {
+        margin: 0.5rem 0 0 0;
+    }
+
+    .page-footer p {
+        max-width: 500px;
+        margin: 1rem auto 1.5rem;
+        font-size: 1.7rem;
+        line-height: 1.5em;
+        color: rgba(0,0,0,0.6)
+    }
+
+    .powered {
+        display: inline-flex;
+        align-items: center;
+        margin: 30px 0 0;
+        padding: 6px 9px 6px 6px;
+        border: rgba(0,0,0,0.1) 1px solid;
+        font-size: 12px;
+        line-height: 12px;
+        letter-spacing: -0.2px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+        font-weight: 500;
+        color: #222;
+        text-decoration: none;
+        background: #fff;
+        border-radius: 6px;
+    }
+
+    .powered svg {
+        height: 16px;
+        width: 16px;
+        margin: 0 6px 0 0;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            font-size: 1.6rem;
+        }
+        h1 {
+            font-size: 3rem;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+        }
+    }
+
+    @media (max-width: 400px) {
+        h1 {
+            font-size: 2.6rem;
+            line-height: 1.15em;
+        }
+        h2 {
+            font-size: 2rem;
+            line-height: 1.2em;
+        }
+        h3 {
+            font-size: 1.7rem;
+        }
+    }
+
+    :root {--ghost-accent-color: #066dd6;}
+    </style>
+
+    <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+
+    
+
+</head>
+
+<body class="amp-template">
+    <header class="page-header">
+        <a href="https://blog.karnwong.me">
+                Karn Wong&#x27;s Blog
+        </a>
+    </header>
+
+    <main class="content" role="main">
+        <article class="post">
+
+            <header class="post-header">
+                <h1 class="post-title">Visualizing map region prefix/suffix</h1>
+                <section class="post-meta">
+                    Karn Wong -
+                    <time class="post-date" datetime="2020-09-03">03 Sep 2020</time>
+                </section>
+            </header>
+            <section class="post-content">
+
+                <pre><code class="language-python">import pandas as pd
+import numpy as np
+import geopandas as gpd
+import geoplot as gplt
+import matplotlib.pyplot as plt
+from geoplot import polyplot
+from pythainlp.tokenize import word_tokenize, syllable_tokenize
+</code></pre>
+<h1 id="datastructure">Data structure</h1>
+<ul>
+<li><strong>name</strong>: target region name</li>
+<li>geometry: spatial column</li>
+<li>*: parent region name, e.g. in "district" dataset it would have a "province" column</li>
+</ul>
+<h1 id="dissolvingdatasetincaseyouhavemultipleregionlevelinthesamefile">Dissolving dataset in case you have multiple region level in the same file</h1>
+<pre><code class="language-python"># assuming you have a district dataset and want to dissolve to province only
+district_filename = "FILE_PATH_HERE"
+
+gdf = gpd.read_file(district_filename)
+
+used_columns = ['province', 
+                'district',]
+
+gdf = gdf.rename(columns={'prov_namt'.upper(): 'province', # change to dummy
+                         'amp_namt'.upper():'district', })
+
+gdf = gdf[used_columns+['geometry']]
+
+# desired data 🛎🛎🛎 please do create a datasest with outermost region, so we can use it as boundary for visualization
+province = gdf.dissolve(by='province')
+province = province.reset_index()\
+                .rename(columns={'province': 'name'})\
+                .drop(columns='district')
+province
+</code></pre>
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>name</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>กระบี่</td>
+      <td>MULTIPOLYGON (((99.14285 7.57282, 99.14256 7.5...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>กรุงเทพมหานคร</td>
+      <td>POLYGON ((100.51756 13.66185, 100.51754 13.661...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>กาญจนบุรี</td>
+      <td>POLYGON ((99.76845 14.09449, 99.76898 14.09458...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>กาฬสินธุ์</td>
+      <td>POLYGON ((103.54900 16.21370, 103.54763 16.213...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>กำแพงเพชร</td>
+      <td>POLYGON ((99.97734 16.11070, 99.97546 16.10861...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>เพชรบุรี</td>
+      <td>POLYGON ((100.02689 12.91666, 100.02690 12.916...</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>เพชรบูรณ์</td>
+      <td>POLYGON ((101.30859 15.57351, 101.30821 15.566...</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>เลย</td>
+      <td>POLYGON ((102.01428 17.14017, 102.01439 17.140...</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>แพร่</td>
+      <td>POLYGON ((99.64157 18.05575, 99.64237 18.05561...</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>แม่ฮ่องสอน</td>
+      <td>POLYGON ((98.16045 18.15059, 98.16069 18.15037...</td>
+    </tr>
+  </tbody>
+</table>
+<p>76 rows × 2 columns</p>
+</div>
+<pre><code class="language-python"># declare dummy variable so it can be reused with other region type
+df = province
+</code></pre>
+<h1 id="edatokenizeregionnameuseothertokenizerforyourtargetlanguage">EDA: tokenize region name. Use other tokenizer for your target language</h1>
+<pre><code class="language-python">def tokenize(unique_region_values):
+    """
+    input: unique values of region type
+    return: dataframe with token columns
+    """
+    
+    temp = pd.DataFrame()
+    temp['name'] = pd.Series(unique_region_values)
+    temp['token'] = temp['name'].apply(lambda x: syllable_tokenize(x))
+    
+    # Thai doesn't use space to separate words, so it's a bit wonky 
+    # when I tell it to do such, that's why I need to see the results 
+    # manually, and in some cases it may "clip" a token
+    temp['token_1-1'] = temp.token.str[0]
+    temp['token_1-2'] = temp.token.str[1]
+    temp['token_1_full'] = temp['token_1-1'] + temp['token_1-2']
+
+    temp['token_2-1'] = temp.token.str[-2]
+    temp['token_2-2'] = temp.token.str[-1]
+    temp['token_2_full'] = temp['token_2-1'] + temp['token_2-2']
+    
+    return temp
+</code></pre>
+<p>Don't forget to look through the results and pick tokens you think are "correct"</p>
+<pre><code class="language-python">tokenize(df.name.unique())
+</code></pre>
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>name</th>
+      <th>token</th>
+      <th>token_1-1</th>
+      <th>token_1-2</th>
+      <th>token_1_full</th>
+      <th>token_2-1</th>
+      <th>token_2-2</th>
+      <th>token_2_full</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>กระบี่</td>
+      <td>[กระ, บี่]</td>
+      <td>กระ</td>
+      <td>บี่</td>
+      <td>กระบี่</td>
+      <td>กระ</td>
+      <td>บี่</td>
+      <td>กระบี่</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>กรุงเทพมหานคร</td>
+      <td>[กรุง, เทพ, มหา, นคร]</td>
+      <td>กรุง</td>
+      <td>เทพ</td>
+      <td>กรุงเทพ</td>
+      <td>มหา</td>
+      <td>นคร</td>
+      <td>มหานคร</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>กาญจนบุรี</td>
+      <td>[กาญ, จน, บุ, รี]</td>
+      <td>กาญ</td>
+      <td>จน</td>
+      <td>กาญจน</td>
+      <td>บุ</td>
+      <td>รี</td>
+      <td>บุรี</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>กาฬสินธุ์</td>
+      <td>[กาฬ, สินธุ์]</td>
+      <td>กาฬ</td>
+      <td>สินธุ์</td>
+      <td>กาฬสินธุ์</td>
+      <td>กาฬ</td>
+      <td>สินธุ์</td>
+      <td>กาฬสินธุ์</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>กำแพงเพชร</td>
+      <td>[กำ, แพง, เพชร]</td>
+      <td>กำ</td>
+      <td>แพง</td>
+      <td>กำแพง</td>
+      <td>แพง</td>
+      <td>เพชร</td>
+      <td>แพงเพชร</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>เพชรบุรี</td>
+      <td>[เพชร, บุ, รี]</td>
+      <td>เพชร</td>
+      <td>บุ</td>
+      <td>เพชรบุ</td>
+      <td>บุ</td>
+      <td>รี</td>
+      <td>บุรี</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>เพชรบูรณ์</td>
+      <td>[เพชร, บูรณ์]</td>
+      <td>เพชร</td>
+      <td>บูรณ์</td>
+      <td>เพชรบูรณ์</td>
+      <td>เพชร</td>
+      <td>บูรณ์</td>
+      <td>เพชรบูรณ์</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>เลย</td>
+      <td>[เลย]</td>
+      <td>เลย</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>เลย</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>แพร่</td>
+      <td>[แพร่]</td>
+      <td>แพร่</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>แพร่</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>แม่ฮ่องสอน</td>
+      <td>[แม่, ฮ่อง, สอน]</td>
+      <td>แม่</td>
+      <td>ฮ่อง</td>
+      <td>แม่ฮ่อง</td>
+      <td>ฮ่อง</td>
+      <td>สอน</td>
+      <td>ฮ่องสอน</td>
+    </tr>
+  </tbody>
+</table>
+<p>76 rows × 8 columns</p>
+</div>
+<h1 id="tokenizewithselectedslugs">Tokenize with selected slugs</h1>
+<pre><code class="language-python"># replace with your slugs here
+slugs = ['นคร', 'สุ', 'สมุทร', 'ธานี', 'นคร']
+slugs = sorted(list(set(slugs)))
+slugs = slugs[::-1] # for longest matching
+
+# get prefix and suffix
+def get_slug_1(x):
+    for i in slugs:
+        if (x.startswith(i)):
+            return i
+        
+def get_slug_2(x):
+    for i in slugs:
+        if (x.endswith(i)):
+            return i
+</code></pre>
+<pre><code class="language-python">df['prefix'] = df['name'].apply(lambda x: get_slug_1(x))
+df['suffix'] = df['name'].apply(lambda x: get_slug_2(x))
+
+df
+</code></pre>
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>name</th>
+      <th>geometry</th>
+      <th>prefix</th>
+      <th>suffix</th>
+      <th>class</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>กระบี่</td>
+      <td>MULTIPOLYGON (((99.14285 7.57282, 99.14256 7.5...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>กรุงเทพมหานคร</td>
+      <td>POLYGON ((100.51756 13.66185, 100.51754 13.661...</td>
+      <td>None</td>
+      <td>นคร</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>กาญจนบุรี</td>
+      <td>POLYGON ((99.76845 14.09449, 99.76898 14.09458...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>กาฬสินธุ์</td>
+      <td>POLYGON ((103.54900 16.21370, 103.54763 16.213...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>กำแพงเพชร</td>
+      <td>POLYGON ((99.97734 16.11070, 99.97546 16.10861...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>เพชรบุรี</td>
+      <td>POLYGON ((100.02689 12.91666, 100.02690 12.916...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>เพชรบูรณ์</td>
+      <td>POLYGON ((101.30859 15.57351, 101.30821 15.566...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>เลย</td>
+      <td>POLYGON ((102.01428 17.14017, 102.01439 17.140...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>แพร่</td>
+      <td>POLYGON ((99.64157 18.05575, 99.64237 18.05561...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>แม่ฮ่องสอน</td>
+      <td>POLYGON ((98.16045 18.15059, 98.16069 18.15037...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>class</td>
+    </tr>
+  </tbody>
+</table>
+<p>76 rows × 5 columns</p>
+</div>
+<h1 id="vizprep">Viz prep</h1>
+<pre><code class="language-python"># make total_bound (background outline)
+# and extend (so the canvas would center at the same point)
+# also, remember the PROVINCE dataset from the start? we're going to use that
+
+province['class'] = 'class' # a dummy column so it would dissolve the whole dataset
+boundary = province.dissolve(by='class')
+extent = boundary.total_bounds
+</code></pre>
+<pre><code class="language-python"># set font (default matplotlib font can't render Thai)
+plt.rcParams["font.family"] = "Tahoma"
+</code></pre>
+<h1 id="cleaningitup">Cleaning it up</h1>
+<p>There are some degree of Pali-Sanskrit influence in Thai, in which the word order is different, so it is possible for a certain *fix to appear as either prefix or suffix. it's like <strong>re</strong>peat and do<strong>re</strong> (for redo)</p>
+<pre><code class="language-python"># ⛩⛩⛩ rerun from this cell onward if you want to change *fix ⛩⛩⛩
+# filter null *fix
+_fix_column = 'suffix' # ⛩⛩⛩ change here ⛩⛩⛩
+df_temp = df
+df_temp = df_temp[df_temp[_fix_column].notnull()]
+
+# get count
+df_temp['{}_count'.format(_fix_column)] = df_temp[_fix_column].map(df_temp[_fix_column]\
+                                            .value_counts()\
+                                            .to_dict())
+</code></pre>
+<pre><code class="language-python"># at the largest region level it won't be much, but at a smaller level like subdistrict
+# having a single *fix for the entire dataset can happen, hence we should filter it out
+
+# filter for a *fix you want to visualize
+viz_categ_count_column = '{}_count'.format(_fix_column)
+
+# ⛩⛩⛩ use the second line if you want to set the threshold with median ⛩⛩⛩
+threshold = 0
+# threshold = df_temp[viz_categ_count_column].median()
+
+df_temp = df_temp[df_temp[viz_categ_count_column] &gt;= threshold]
+</code></pre>
+<pre><code class="language-python">df_temp
+</code></pre>
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>name</th>
+      <th>geometry</th>
+      <th>prefix</th>
+      <th>suffix</th>
+      <th>class</th>
+      <th>suffix_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>กรุงเทพมหานคร</td>
+      <td>POLYGON ((100.51756 13.66185, 100.51754 13.661...</td>
+      <td>None</td>
+      <td>นคร</td>
+      <td>class</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>ปทุมธานี</td>
+      <td>POLYGON ((100.91417 13.95445, 100.91415 13.952...</td>
+      <td>None</td>
+      <td>ธานี</td>
+      <td>class</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>สกลนคร</td>
+      <td>POLYGON ((104.36246 17.09941, 104.36248 17.099...</td>
+      <td>None</td>
+      <td>นคร</td>
+      <td>class</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>สุราษฎร์ธานี</td>
+      <td>MULTIPOLYGON (((99.20865 8.33715, 99.20647 8.3...</td>
+      <td>สุ</td>
+      <td>ธานี</td>
+      <td>class</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>อุดรธานี</td>
+      <td>POLYGON ((103.44196 17.21428, 103.44246 17.214...</td>
+      <td>None</td>
+      <td>ธานี</td>
+      <td>class</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>อุทัยธานี</td>
+      <td>POLYGON ((100.04080 15.29612, 100.04067 15.296...</td>
+      <td>None</td>
+      <td>ธานี</td>
+      <td>class</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>อุบลราชธานี</td>
+      <td>POLYGON ((105.55486 14.95406, 105.55414 14.953...</td>
+      <td>None</td>
+      <td>ธานี</td>
+      <td>class</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h1 id="viz">Viz</h1>
+<pre><code class="language-python">import os
+
+key_column = _fix_column
+key_name = 'province' # ⛩⛩⛩ set region type here #
+key_count_column = '{}_count'.format(key_column)
+
+out_dir = 'plot/{}_{}'.format(key_name, key_column)
+os.makedirs(out_dir, exist_ok=True)
+
+gdf = df_temp
+for key in gdf[key_column].unique():    
+    ax = gplt.polyplot(boundary, figsize=(10, 15))
+    
+    query = gdf[gdf[key_column]==key]
+    total_records = str(int(query[key_count_column].tolist()[0]))
+
+    gplt.polyplot(query, ax=ax, extent=extent,edgecolor='black',
+                        facecolor='green')   
+
+    plt.title('{}: {} records'.format(key, total_records))
+    
+    plt.savefig('{}/{}_{}.png'.format(out_dir, str(total_records).zfill(3), key))
+#     break
+</code></pre>
+<h1 id="output-structure">Output structure</h1><figure class="kg-card kg-image-card"></figure><h1 id="some-interesting-outputs-at-subdistrict-level-">Some interesting outputs (at subdistrict level)</h1><h2 id="northern-region">Northern region</h2><p>You can see that the prefix "แม่" concentrates around the northern region.</p><figure class="kg-card kg-image-card"></figure><h2 id="eastern-region">Eastern region</h2><p>"โนน" seems to be specific to the eastern seeing it's clustered around the eastern part of the country.</p><figure class="kg-card kg-image-card"></figure><h2 id="multi-region">Multi-region</h2><p>As expected, "บาง" is clustered around the central region, no surprise here since the old name of Thailand's capital (it's located in the central region) is "บางกอก." But you can see that it's clustered around the southern parts as well.</p><figure class="kg-card kg-image-card"></figure>
+
+            </section>
+
+        </article>
+    </main>
+    <footer class="page-footer">
+        <h3>Karn Wong&#x27;s Blog</h3>
+        <p><a href="https://blog.karnwong.me">Read more posts →</a></p>
+        <a class="powered" href="https://ghost.org" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 156"><g fill="none" fill-rule="evenodd"><rect fill="#15212B" width="156" height="156" rx="27"/><g transform="translate(36 36)" fill="#F6F8FA"><path d="M0 71.007A4.004 4.004 0 014 67h26a4 4 0 014 4.007v8.986A4.004 4.004 0 0130 84H4a4 4 0 01-4-4.007v-8.986zM50 71.007A4.004 4.004 0 0154 67h26a4 4 0 014 4.007v8.986A4.004 4.004 0 0180 84H54a4 4 0 01-4-4.007v-8.986z"/><rect y="34" width="84" height="17" rx="4"/><path d="M0 4.007A4.007 4.007 0 014.007 0h41.986A4.003 4.003 0 0150 4.007v8.986A4.007 4.007 0 0145.993 17H4.007A4.003 4.003 0 010 12.993V4.007z"/><rect x="67" width="17" height="17" rx="4"/></g></g></svg> Published with Ghost</a>
+    </footer>
+    
+</body>
+</html>
